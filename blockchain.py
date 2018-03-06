@@ -10,6 +10,13 @@ from flask import Flask, jsonify, request
 
 import os
 import pickle
+import signal
+
+# Signal Handler
+def signal_handler(signum, frame):
+    # Data persistence before exiting
+    persist()
+    exit()
 
 # Data persistence
 def persist():
@@ -198,6 +205,9 @@ app = Flask(__name__)
 
 # Generate a globally unique address for this node
 node_identifier = str(uuid4()).replace('-', '')
+
+# Handle Signal
+signal.signal(signal.SIGINT, signal_handler)
 
 # Instantiate the Blockchain
 if os.path.exists('./blockchain.data'):
