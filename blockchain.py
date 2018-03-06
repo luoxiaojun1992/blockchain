@@ -8,6 +8,14 @@ from uuid import uuid4
 import requests
 from flask import Flask, jsonify, request
 
+import os
+import pickle
+
+# Data persistence
+def persist():
+    blockchain_file = open('./blockchain.data', 'wb')
+    pickle.dump(blockchain, blockchain_file, -1)
+    blockchain_file.close()
 
 class Blockchain:
     def __init__(self):
@@ -16,7 +24,7 @@ class Blockchain:
         self.nodes = set()
 
         # 创建创世块
-        self.new_block(previous_hash='1', proof=100)
+        self.new_block(previous_hash='1', proof=100, is_persist=False)
 
     def register_node(self, address: str) -> None:
         """
@@ -27,6 +35,8 @@ class Blockchain:
 
         parsed_url = urlparse(address)
         self.nodes.add(parsed_url.netloc)
+   
+        persist()
 
     def valid_chain(self, chain: List[Dict[str, Any]]) -> bool:
         """
@@ -89,9 +99,11 @@ class Blockchain:
             self.chain = new_chain
             return True
 
+        persist()
+
         return False
 
-    def new_block(self, proof: int, previous_hash: Optional[str]) -> Dict[str, Any]:
+    def new_block(self, proof: int, previous_hash: Optional[str], is_persist: bool) -> Dict[str, Any]:
         """
         生成新块
 
@@ -112,6 +124,10 @@ class Blockchain:
         self.current_transactions = []
 
         self.chain.append(block)
+
+        if is_persist:
+            persist()
+
         return block
 
     def new_transaction(self, sender: str, recipient: str, amount: int) -> int:
@@ -128,6 +144,8 @@ class Blockchain:
             'recipient': recipient,
             'amount': amount,
         })
+
+        persist()
 
         return self.last_block['index'] + 1
 
@@ -182,8 +200,12 @@ app = Flask(__name__)
 node_identifier = str(uuid4()).replace('-', '')
 
 # Instantiate the Blockchain
-blockchain = Blockchain()
-
+if os.path.exists('./blockchain.data'):
+   blockchain_file = open('./blockchain.data', 'rb')
+   blockchain = pickle.load(blockchain_file)
+   blockchain_file.close()
+else:
+   blockchain = Blockchain()
 
 @app.route('/mine', methods=['GET'])
 def mine():
@@ -201,7 +223,7 @@ def mine():
     )
 
     # Forge the new Block by adding it to the chain
-    block = blockchain.new_block(proof, None)
+    block = blockchain.new_block(proof, None, True)
 
     response = {
         'message': "New Block Forged",
