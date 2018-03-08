@@ -125,8 +125,13 @@ class Blockchain:
             'timestamp': time(),
             'transactions': self.current_transactions,
             'proof': proof,
-            'previous_hash': previous_hash or self.hash(self.chain[-1]),
+            'previous_hash': previous_hash or self.chain[-1]['hash'],
+            'hash': ''
         }
+
+        print(block)
+
+        block['hash'] = self.hash(block)
 
         # Reset the current list of transactions
         self.current_transactions = []
@@ -200,6 +205,23 @@ class Blockchain:
         guess_hash = hashlib.sha256(guess).hexdigest()
         return guess_hash[:4] == "0000"
 
+    def get_block(self, hash: str) -> Dict[str, Any]:
+        current_index = 0
+        chain = self.chain
+        chain_len = len(chain)
+        while current_index < chain_len:
+            block = chain[current_index]
+            if self.hash(block) == hash:
+                return block
+
+            current_index += 1
+
+    def reset_chain(self) -> None:
+        self.current_transactions = []
+        self.chain = []
+
+        # 创建创世块
+        self.new_block(previous_hash='1', proof=100, is_persist=True)
 
 # Instantiate the Node
 app = Flask(__name__)
@@ -306,6 +328,19 @@ def consensus():
 
     return jsonify(response), 200
 
+@app.route('/block/get', methods=['GET'])
+def get_block():
+    block = blockchain.get_block(hash=request.args.get('hash'))
+    return jsonify(block), 200
+
+@app.route('/chain/reset', methods=['GET'])
+def reset_chain():
+    blockchain.reset_chain()
+    response = {
+        'chain': blockchain.chain,
+        'length': len(blockchain.chain),
+    }
+    return jsonify(response), 200
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
