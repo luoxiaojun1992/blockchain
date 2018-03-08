@@ -24,6 +24,7 @@ def persist():
     pickle.dump(blockchain, blockchain_file, -1)
     blockchain_file.close()
 
+# 默认单线程同步阻塞方式处理请求,因此不用考虑线程安全问题
 class Blockchain:
     def __init__(self):
         self.current_transactions = []
