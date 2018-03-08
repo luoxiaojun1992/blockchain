@@ -211,7 +211,7 @@ class Blockchain:
         chain_len = len(chain)
         while current_index < chain_len:
             block = chain[current_index]
-            if self.hash(block) == hash:
+            if block['hash'] == hash:
                 return block
 
             current_index += 1
