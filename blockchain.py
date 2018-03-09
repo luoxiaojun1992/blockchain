@@ -347,7 +347,9 @@ if __name__ == '__main__':
 
     parser = ArgumentParser()
     parser.add_argument('-p', '--port', default=5000, type=int, help='port to listen on')
+    parser.add_argument('-addr', '--addr', default='127.0.0.1', type=str, help='host to listen on')
     args = parser.parse_args()
     port = args.port
+    addr = args.addr
 
-    app.run(host='127.0.0.1', port=port)
+    app.run(host=addr, port=port)
