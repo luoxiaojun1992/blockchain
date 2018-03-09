@@ -57,13 +57,24 @@ class Blockchain:
         last_block = chain[0]
         current_index = 1
 
+        last_hash = last_block['hash']
+        last_block['hash'] = ''
+        if self.hash(last_block) != last_hash:
+            return False 
+        last_block['hash'] = last_hash
+
         while current_index < len(chain):
             block = chain[current_index]
             print(f'{last_block}')
             print(f'{block}')
             print("\n-----------\n")
             # Check that the hash of the block is correct
-            if block['previous_hash'] != self.hash(last_block):
+            hash = block['hash']
+            block['hash'] = ''
+            if self.hash(block) != hash:
+                return False
+            block['hash'] = hash
+            if block['previous_hash'] != last_block['hash']:
                 return False
 
             # Check that the Proof of Work is correct
@@ -128,8 +139,6 @@ class Blockchain:
             'previous_hash': previous_hash or self.chain[-1]['hash'],
             'hash': ''
         }
-
-        print(block)
 
         block['hash'] = self.hash(block)
 
@@ -260,6 +269,7 @@ def mine():
 
     response = {
         'message': "New Block Forged",
+        'hash': block['hash'],
         'index': block['index'],
         'transactions': block['transactions'],
         'proof': block['proof'],
