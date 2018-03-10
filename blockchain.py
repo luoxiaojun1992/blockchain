@@ -102,7 +102,7 @@ class Blockchain:
 
         # Grab and verify the chains from all the nodes in our network
         for node in neighbours:
-            response = requests.get(f'http://{node}/chain')
+            response = requests.get(f'http://{node}/chain', headers={"Connection": "close"})
 
             if response.status_code == 200:
                 length = response.json()['length']
@@ -230,6 +230,7 @@ class Blockchain:
     def reset_chain(self) -> None:
         self.current_transactions = []
         self.chain = []
+        self.nodes = set()
 
         # 创建创世块
         self.new_block(previous_hash='1', proof=100, is_persist=True, data={})
