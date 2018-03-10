@@ -32,7 +32,7 @@ class Blockchain:
         self.nodes = set()
 
         # 创建创世块
-        self.new_block(previous_hash='1', proof=100, is_persist=False)
+        self.new_block(previous_hash='1', proof=100, is_persist=False, data={})
 
     def register_node(self, address: str) -> None:
         """
@@ -122,7 +122,7 @@ class Blockchain:
 
         return False
 
-    def new_block(self, proof: int, previous_hash: Optional[str], is_persist: bool) -> Dict[str, Any]:
+    def new_block(self, proof: int, previous_hash: Optional[str], is_persist: bool, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         生成新块
 
@@ -138,7 +138,8 @@ class Blockchain:
             'proof': proof,
             'previous_hash': previous_hash or self.chain[-1]['hash'],
             'hash': '',
-            'node': node_identifier
+            'node': node_identifier,
+            'data': data
         }
 
         block['hash'] = self.hash(block)
@@ -231,7 +232,7 @@ class Blockchain:
         self.chain = []
 
         # 创建创世块
-        self.new_block(previous_hash='1', proof=100, is_persist=True)
+        self.new_block(previous_hash='1', proof=100, is_persist=True, data={})
 
 # Instantiate the Node
 app = Flask(__name__)
@@ -250,7 +251,7 @@ if os.path.exists('./blockchain.data'):
 else:
    blockchain = Blockchain()
 
-@app.route('/mine', methods=['GET'])
+@app.route('/mine', methods=['POST'])
 def mine():
     # We run the proof of work algorithm to get the next proof...
     last_block = blockchain.last_block
@@ -266,7 +267,7 @@ def mine():
     )
 
     # Forge the new Block by adding it to the chain
-    block = blockchain.new_block(proof, None, True)
+    block = blockchain.new_block(proof, None, True, data=request.get_json())
 
     response = {
         'message': "New Block Forged",
@@ -275,7 +276,8 @@ def mine():
         'transactions': block['transactions'],
         'proof': block['proof'],
         'previous_hash': block['previous_hash'],
-        'node': node_identifier
+        'node': node_identifier,
+        'data': block['data']
     }
     return jsonify(response), 200
 
