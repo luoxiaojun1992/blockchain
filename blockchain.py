@@ -251,6 +251,8 @@ if os.path.exists('./blockchain.data'):
 else:
    blockchain = Blockchain()
 
+# Connection: keep-alive 长连接会导致其他连接阻塞
+
 @app.route('/mine', methods=['POST'])
 def mine():
     # We run the proof of work algorithm to get the next proof...
