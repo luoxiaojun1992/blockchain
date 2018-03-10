@@ -137,7 +137,8 @@ class Blockchain:
             'transactions': self.current_transactions,
             'proof': proof,
             'previous_hash': previous_hash or self.chain[-1]['hash'],
-            'hash': ''
+            'hash': '',
+            'node': node_identifier
         }
 
         block['hash'] = self.hash(block)
@@ -274,6 +275,7 @@ def mine():
         'transactions': block['transactions'],
         'proof': block['proof'],
         'previous_hash': block['previous_hash'],
+        'node': node_identifier
     }
     return jsonify(response), 200
 
@@ -291,7 +293,7 @@ def new_transaction():
     index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
 
     response = {'message': f'Transaction will be added to Block {index}'}
-    return jsonify(response), 201
+    return jsonify(response), 200
 
 
 @app.route('/chain', methods=['GET'])
@@ -318,7 +320,7 @@ def register_nodes():
         'message': 'New nodes have been added',
         'total_nodes': list(blockchain.nodes),
     }
-    return jsonify(response), 201
+    return jsonify(response), 200
 
 
 @app.route('/nodes/resolve', methods=['GET'])
