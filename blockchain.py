@@ -30,6 +30,7 @@ class Blockchain:
         self.current_transactions = []
         self.chain = []
         self.nodes = set()
+        self.hash_blocks = {}
 
         # 创建创世块
         self.new_block(previous_hash='1', proof=100, is_persist=False, data={})
@@ -144,6 +145,9 @@ class Blockchain:
 
         block['hash'] = self.hash(block)
 
+        # Cache hash block
+        self.hash_blocks[block['hash']] = block
+
         # Reset the current list of transactions
         self.current_transactions = []
 
@@ -217,15 +221,10 @@ class Blockchain:
         return guess_hash[:4] == "0000"
 
     def get_block(self, hash: str) -> Dict[str, Any]:
-        current_index = 0
-        chain = self.chain
-        chain_len = len(chain)
-        while current_index < chain_len:
-            block = chain[current_index]
-            if block['hash'] == hash:
-                return block
-
-            current_index += 1
+        try:
+            return self.hash_blocks[hash]
+        except KeyError:
+            return {}
 
     def reset_chain(self) -> None:
         self.current_transactions = []
