@@ -146,7 +146,7 @@ class Blockchain:
         block['hash'] = self.hash(block)
 
         # Cache hash block
-        self.hash_blocks[block['hash']] = block
+        self.hash_blocks[block['hash']] = block['index']
 
         # Reset the current list of transactions
         self.current_transactions = []
@@ -222,7 +222,7 @@ class Blockchain:
 
     def get_block(self, hash: str) -> Dict[str, Any]:
         try:
-            return self.hash_blocks[hash]
+            return self.chain[self.hash_blocks[hash] - 1]
         except KeyError:
             return {}
 
