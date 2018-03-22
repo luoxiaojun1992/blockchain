@@ -283,6 +283,13 @@ def mine():
     }
     return jsonify(response), 200
 
+@app.route('/transactions', methods=['GET'])
+def current_transactions():
+    response = {
+        'transactions': blockchain.current_transactions,
+        'length': len(blockchain.current_transactions),
+    }
+    return jsonify(response), 200
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
